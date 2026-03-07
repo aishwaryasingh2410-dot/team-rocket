@@ -1,8 +1,29 @@
 import streamlit as st
 from pathlib import Path
+import pandas as pd
 
+from frontend.components.header import show_header
+from frontend.components.sidebar import dataset_selector
+from frontend.components.metrics import show_metrics
+
+
+st.set_page_config(layout="wide")
+
+# Load CSS
+with open("frontend/styles/style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+show_header()
+
+dataset = dataset_selector()
+
+df = pd.read_csv(f"data/{dataset}.csv")
+
+show_metrics(df)
+
+show_page(df)
 # -------------------------------------------------------
-# PAGE CONFIG (MUST BE FIRST STREAMLIT COMMAND)
+# PAGE CONFIG
 # -------------------------------------------------------
 
 st.set_page_config(
@@ -17,7 +38,7 @@ st.set_page_config(
 # -------------------------------------------------------
 
 def load_css():
-    css_path = Path("styles/style.css")
+    css_path = Path("style/style.css")
 
     if css_path.exists():
         with open(css_path) as f:
@@ -60,7 +81,6 @@ def get_available_expiries():
 
     return expiries
 
-
 expiries = get_available_expiries()
 
 # -------------------------------------------------------
@@ -80,7 +100,7 @@ if expiries:
 
 else:
 
-    st.sidebar.warning("No datasets found in /data folder")
+    st.sidebar.warning("No datasets found in backend/data folder")
     selected_expiry = None
 
 st.sidebar.markdown("---")
@@ -118,7 +138,7 @@ NumPy
 st.title("📊 NIFTY Options Market Intelligence Dashboard")
 
 # -------------------------------------------------------
-# METRICS ROW
+# METRICS
 # -------------------------------------------------------
 
 col1, col2, col3 = st.columns(3)
@@ -157,7 +177,7 @@ unsafe_allow_html=True
 )
 
 # -------------------------------------------------------
-# FEATURE OVERVIEW
+# FEATURES
 # -------------------------------------------------------
 
 st.markdown("## 🚀 Dashboard Capabilities")
@@ -231,7 +251,7 @@ if expiries:
 
 else:
 
-    st.error("❌ No datasets detected in the data folder.")
+    st.error("❌ No datasets detected in backend/data folder.")
 
 # -------------------------------------------------------
 # FOOTER
