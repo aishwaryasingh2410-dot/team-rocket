@@ -1,36 +1,41 @@
-from pathlib import Path
-import streamlit as st
+import os
+import glob
 import pandas as pd
 
-DATA_PATH = Path("backend/data")
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 
 
-@st.cache_data
-def get_available_expiries():
+def load_all_data():
 
-    if not DATA_PATH.exists():
-        return []
+    files = glob.glob(os.path.join(DATA_DIR, "*.csv"))
 
-    files = list(DATA_PATH.glob("*.csv"))
-    expiries = [f.stem for f in files]
-    expiries.sort()
-
-    return expiries
-
-
-@st.cache_data
-def load_expiry_data(expiry):
-
-    file_path = DATA_PATH / f"{expiry}.csv"
-
-    if not file_path.exists():
+    if len(files) == 0:
         return pd.DataFrame()
 
-    df = pd.read_csv(file_path)
+    df = pd.concat([pd.read_csv(file) for file in files], ignore_index=True)
 
     df.columns = df.columns.str.strip().str.lower()
 
-    if "datetime" in df.columns:
-        df["datetime"] = pd.to_datetime(df["datetime"], errors="coerce")
-
     return df
+
+
+def get_available_expiries():
+
+    df = load_all_data()
+
+    if df.empty:
+        return []
+
+    return sorted(df["expiry"].dropna().unique())
+
+
+def load_expiry_data(expiry):
+
+    df = load_all_data()
+
+    if df.empty:
+        return df
+
+    return df[df["expiry"] == expiry]
